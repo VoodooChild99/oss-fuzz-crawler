@@ -15,6 +15,10 @@ git clone https://github.com/VoodooChild99/oss-fuzz-crawler.git
 ```shell
 pip install -r requirements.txt
 ```
+**OR**
+```shell
+pip install requests toml rich
+```
 
 3. run `crawler.py`
 ```shell
