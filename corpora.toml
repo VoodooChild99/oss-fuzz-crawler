@@ -1,0 +1,217 @@
+libpng = ["read_fuzzer"]
+
+libbpf = ["bpf-object-fuzzer"]
+
+bloaty = ["fuzz_target"]
+
+cjson = ["read_fuzzer"]
+
+curl = [
+    "fuzz_url",
+    "fuzzer",
+    "fuzzer_dict",
+    "fuzzer_file",
+    "fuzzer_ftp",
+    "fuzzer_gopher",
+    "fuzzer_http",
+    "fuzzer_https",
+    "fuzzer_imap",
+    "fuzzer_ldap",
+    "fuzzer_mqtt",
+    "fuzzer_pop3",
+    "fuzzer_rtmp",
+    "fuzzer_rtsp",
+    "fuzzer_scp",
+    "fuzzer_sftp",
+    "fuzzer_smb",
+    "fuzzer_smtp",
+    "fuzzer_ws",
+    "fuzzer_tftp",
+]
+
+freetype2 = [
+    "bdf-render",
+    "bdf",
+    "cff-ftengine",
+    "cff-render-ftengine",
+    "cff-render",
+    "cff",
+    "cidtype1-ftengine",
+    "cidtype1-render-ftengine",
+    "cidtype1-render",
+    "cidtype1",
+    "colrv1",
+    "pcf-render",
+    "pcf",
+    "truetype-render-i35",
+    "truetype-render-i38",
+    "truetype-render",
+    "truetype",
+    "type1-ftengine",
+    "type1-render-ftengine",
+    "type1-tar",
+    "type1-render-tar",
+    "type1-render",
+    "type1",
+    "type42-render",
+    "type42",
+    "windowsfnt-render",
+    "windowsfnt",
+    "gzip",
+    "glyphs-bitmaps-pcf",
+    "glyphs-outlines",
+    "lzw",
+    "bzip2",
+]
+
+harfbuzz = [
+    "hb-shape-fuzzer",
+    "hb-draw-fuzzer",
+    "hb-subset-fuzzer",
+    "hb-set-fuzzer",
+]
+
+jsoncpp = ["fuzzer"]
+
+lcms = [
+    "cmsIT8_load_fuzzer",
+    "cms_transform_fuzzer",
+    "cms_overwrite_transform_fuzzer",
+    "cms_transform_all_fuzzer",
+    "cms_profile_fuzzer",
+    "cms_universal_transform_fuzzer",
+    "cms_transform_extended_fuzzer",
+]
+
+libjpeg-turbo = [
+    "compress_fuzzer",
+    "compress_yuv_fuzzer",
+    "compress_lossless_fuzzer",
+    "compress12_fuzzer",
+    "compress12_lossless_fuzzer",
+    "compress16_lossless_fuzzer",
+    "libjpeg_turbo_fuzzer",
+    "decompress_yuv_fuzzer",
+    "transform_fuzzer",
+    "cjpeg_fuzzer",
+]
+
+libpcap = [
+    "fuzz_pcap",
+    "fuzz_filter",
+    "fuzz_both",
+    # "fuzz_rclient",
+    # "fuzz_rserver",
+]
+
+libxml2 = ["html", "regexp", "schema", "uri", "xml", "xpath"]
+
+libxslt = ["xpath", "xslt"]
+
+mbedtls = [
+    "fuzz_client",
+    "fuzz_dtlsclient",
+    "fuzz_dtlsserver",
+    "fuzz_pkcs7",
+    "fuzz_privkey",
+    "fuzz_pubkey",
+    "fuzz_server",
+    "fuzz_x509crl",
+    "fuzz_x509crt",
+    "fuzz_x509csr",
+]
+
+openh264 = ["decoder_fuzzer"]
+
+openssl = [
+    "asn1",
+    "asn1parse",
+    "bignum",
+    "bndiv",
+    "client",
+    "cmp",
+    "cms",
+    "conf",
+    "crl",
+    "ct",
+    "punycode",
+    "server",
+    "x509",
+]
+
+openthread = [
+    "ot-cli-received-fuzzer",
+    "ot-ip6-send-fuzzer",
+    "ot-radio-receive-done-fuzzer",
+    "ot-ncp-hdlc-received-fuzzer",
+]
+
+php = [
+    "php-fuzz-json",
+    "php-fuzz-exif",
+    "php-fuzz-unserialize",
+    "php-fuzz-unserializehash",
+    "php-fuzz-parser",
+    "php-fuzz-execute",
+]
+
+proj4 = ["proj_crs_to_crs_fuzzer"]
+
+re2 = ["fuzzer"]
+
+sqlite3 = ["ossfuzz"]
+
+stb = ["png_read_fuzzer", "stbi_read_fuzzer"]
+
+systemd = [
+    "fuzz-bootspec",
+    "fuzz-bus-match",
+    "fuzz-bus-message",
+    "fuzz-calendarspec",
+    "fuzz-catalog",
+    "fuzz-dhcp-client",
+    "fuzz-dhcp-server-relay",
+    "fuzz-dhcp-server",
+    "fuzz-dhcp6-client",
+    "fuzz-dns-packet",
+    "fuzz-env-file",
+    "fuzz-etc-hosts",
+    "fuzz-fido-id-desc",
+    "fuzz-journal-remote",
+    "fuzz-journald-audit",
+    "fuzz-journald-kmsg",
+    "fuzz-journald-native-fd",
+    "fuzz-journald-stream",
+    "fuzz-journald-syslog",
+    "fuzz-json",
+    "fuzz-link-parser",
+    "fuzz-lldp-rx",
+    "fuzz-ndisc-rs",
+    "fuzz-netdev-parser",
+    "fuzz-network-parser",
+    "fuzz-nspawn-oci",
+    "fuzz-nspawn-settings",
+    "fuzz-resource-record",
+    "fuzz-systemctl-parse-argv",
+    "fuzz-udev-database",
+    "fuzz-udev-rules",
+    "fuzz-unit-file",
+    "fuzz-varlink",
+    "fuzz-xdg-desktop",
+]
+
+vorbis = ["decode_fuzzer"]
+
+woff2 = ["convert_woff2ttf_fuzzer", "convert_woff2ttf_fuzzer_new_entry"]
+
+zlib = [
+    "checksum_fuzzer",
+    "compress_fuzzer",
+    "example_dict_fuzzer",
+    "example_flush_fuzzer",
+    "example_large_fuzzer",
+    "example_small_fuzzer",
+    "minigzip_fuzzer",
+    "uncompress2_fuzzer",
+    "uncompress_fuzzer",
+]
