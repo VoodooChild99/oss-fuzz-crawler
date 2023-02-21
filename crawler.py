@@ -155,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', "--directory",
                         required=True,
                         type=__to_absolute_path,
-                        help="Directory where the corpuses are stored")
+                        help="Directory where the corpuses are stored locally")
     parser.add_argument('-m', "--max-retries",
                         type=__to_uint,
                         help="Max retires when downloading corpuses, always retry if not specified")

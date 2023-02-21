@@ -29,7 +29,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -s, --skip-check      Download corpuses only when it's not in local, hash checks are skipped
   -d DIRECTORY, --directory DIRECTORY
-                        Directory where the corpuses are stored
+                        Directory where the corpuses are stored locally
   -m MAX_RETRIES, --max-retries MAX_RETRIES
                         Max retires when downloading corpuses, always retry if not specified
 ```
