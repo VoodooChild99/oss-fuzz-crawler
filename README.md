@@ -37,8 +37,8 @@ optional arguments:
 ## Target Corpora
 [corpora.toml](./corpora.toml) already covers several [OSS-Fuzz](https://github.com/google/oss-fuzz) projects used by [FuzzBench](https://github.com/google/fuzzbench).
 
-You can add more corpus by adding stuff into [corpora.toml](./corpora.toml) as follows:
+You can add more corpuses into [corpora.toml](./corpora.toml) as follows:
 ```toml
-project = [ "target1", "target2", .. ]
+project = [ "target1", "target2" ]
 ```
 
