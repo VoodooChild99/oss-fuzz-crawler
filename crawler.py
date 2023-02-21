@@ -50,12 +50,12 @@ class Crawler:
                 "download", filename=self.cur_target, start=True)
             while True:
                 try:
-                    corpus = self.session.get(url)
+                    corpus = self.session.get(url, stream=True)
                     progress.update(task_id, total=int(
                         corpus.headers['content-length']))
                     all_data = b""
                     # progress.start_task(task_id)
-                    for data in corpus.iter_content(chunk_size=1024):
+                    for data in corpus.iter_content(chunk_size=32768):
                         all_data += data
                         progress.update(task_id, advance=len(data))
                     progress.remove_task(task_id)
