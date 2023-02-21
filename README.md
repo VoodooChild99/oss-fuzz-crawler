@@ -39,6 +39,6 @@ optional arguments:
 
 You can add more corpus by adding stuff into [corpora.toml](./corpora.toml) as follows:
 ```toml
-project = [ "target1", "target2", ...]
+project = [ "target1", "target2", .. ]
 ```
 
