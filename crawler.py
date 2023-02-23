@@ -32,46 +32,41 @@ def log(msg):
     progress.console.log(msg)
 
 class Crawler:
-    def __init__(self, skip_existed, dir, max_retries, corpuses) -> None:
+    def __init__(self, skip_existed, dir, max_retries, corpuses, task_id) -> None:
         self.skip_existed = skip_existed
         self.dir = dir
         self.local_corpus_path_template = dir + '/{0}/{1}-corpus.zip'
         self.local_corpus_dir_template = dir + '/{0}'
         self.max_retries = max_retries
         self.session = requests.Session()
+        self.task_id = task_id
         with open(corpuses, 'r') as f:
             self.corpuses = toml.load(f)
         
     def __get_corpus(self, url, filepath):
         retry_num = -1
-        with progress:
-            while True:
-                try:
-                    corpus = self.session.get(url, stream=True)
-                    if corpus.status_code != 200:
-                        log("[x] Failed to download corpus {}: {}".format(self.cur_target, corpus.content))
-                        return None
-                    task_id = progress.add_task("download", filename=self.cur_target, start=True)
-                    progress.update(task_id, total=int(corpus.headers['content-length']))
-                    with open(filepath, 'wb') as f:
-                        for data in corpus.iter_content(chunk_size=1024):
-                            f.write(data)
-                            progress.update(task_id, advance=len(data))
-                    progress.remove_task(task_id)
-                    log("[o] Downloaded corpus {}".format(self.cur_target))
-                    return
-                except KeyboardInterrupt as KI:
-                    raise KeyboardInterrupt(KI)
-                except Exception as err:
-                    retry_num += 1
-                    if (self.max_retries is not None) and (retry_num >= self.max_retries):
-                        log("[x] Max retries exceeded when downloading corpus {}: {}".format(self.cur_target, err))
-                        return None
+        while True:
+            try:
+                corpus = self.session.get(url, stream=True)
+                if corpus.status_code != 200:
+                    log("[x] Failed to download corpus {}: {}".format(self.cur_target, corpus.content))
+                    return None
+                progress.update(self.task_id, total=int(corpus.headers['content-length']))
+                with open(filepath, 'wb') as f:
+                    for data in corpus.iter_content(chunk_size=1024):
+                        f.write(data)
+                        progress.update(self.task_id, advance=len(data))
+                log("[o] Downloaded corpus {}".format(self.cur_target))
+                return
+            except KeyboardInterrupt as KI:
+                raise KeyboardInterrupt(KI)
+            except Exception as err:
+                retry_num += 1
+                if (self.max_retries is not None) and (retry_num >= self.max_retries):
+                    log("[x] Max retries exceeded when downloading corpus {}: {}".format(self.cur_target, err))
+                    return None
 
-    def __download_one(self, proj: str, fuzzer: str):
-        self.cur_target = fuzzer
-        if not fuzzer.startswith(proj + '_'):
-            self.cur_target = proj + '_' + fuzzer
+    def __download_one(self, proj: str):
         local_corpus = Path(
             self.local_corpus_path_template.format(proj, self.cur_target))
         url = URL_TEMPLATE.format(proj, self.cur_target)
@@ -92,7 +87,12 @@ class Crawler:
             if not local_corpus_dir.exists():
                 os.mkdir(local_corpus_dir)
             for fuzzer in self.corpuses[proj]:
-                self.__download_one(proj, fuzzer)
+                self.cur_target = fuzzer
+                if not fuzzer.startswith(proj + '_'):
+                    self.cur_target = proj + '_' + fuzzer
+                progress.update(self.task_id, filename=self.cur_target)
+                self.__download_one(proj)
+                progress.reset(self.task_id)
 
 
 def __to_absolute_path(path: str) -> str:
@@ -120,11 +120,14 @@ def __to_uint(num: str) -> int:
 
 
 def main(args):
-    c = Crawler(args.skip_existed, args.directory, args.max_retries, args.corpuses)
+    task_id = progress.add_task("download", filename="", start=True)
+    c = Crawler(args.skip_existed, args.directory, args.max_retries, args.corpuses, task_id)
     try:
         c.run()
     except KeyboardInterrupt:
         print("[:)] bye")
+    finally:
+        progress.remove_task(task_id)
 
 
 if __name__ == "__main__":
@@ -144,4 +147,5 @@ if __name__ == "__main__":
                         type=__to_absolute_path,
                         help="The TOML file containing corpuses to download")
     args = parser.parse_args()
-    main(args)
+    with progress:
+        main(args)
