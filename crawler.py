@@ -15,7 +15,7 @@ from rich.progress import (
 )
 
 
-URL_TEMPLATE = "https://storage.googleapis.com/{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/{0}_{1}/public.zip"
+URL_TEMPLATE = "https://storage.googleapis.com/{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/{1}/public.zip"
 
 progress = Progress(
     TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
@@ -36,7 +36,7 @@ class Crawler:
     def __init__(self, skip_check, dir, max_retries, corpuses) -> None:
         self.skip_check = skip_check
         self.dir = dir
-        self.local_corpus_path_template = dir + '/{0}/{0}-{1}-corpus.zip'
+        self.local_corpus_path_template = dir + '/{0}/{1}-corpus.zip'
         self.local_corpus_dir_template = dir + '/{0}'
         self.max_retries = max_retries
         self.session = requests.Session()
@@ -71,11 +71,13 @@ class Crawler:
                         log("[x] Max retries exceeded when downloading corpus {}: {}".format(self.cur_target, err))
                         return None
 
-    def __download_one(self, proj: str, target: str):
+    def __download_one(self, proj: str, fuzzer: str):
+        self.cur_target = fuzzer
+        if not fuzzer.startswith(proj + '_'):
+            self.cur_target = proj + '_' + fuzzer
         local_corpus = Path(
-            self.local_corpus_path_template.format(proj, target))
-        self.cur_target = '{}-{}'.format(proj, target)
-        url = URL_TEMPLATE.format(proj, target)
+            self.local_corpus_path_template.format(proj, self.cur_target))
+        url = URL_TEMPLATE.format(proj, self.cur_target)
 
         if not self.skip_check:
             # check hash
@@ -116,14 +118,20 @@ class Crawler:
                 self.local_corpus_dir_template.format(proj))
             if not local_corpus_dir.exists():
                 os.mkdir(local_corpus_dir)
-            for t in self.corpuses[proj]:
-                self.__download_one(proj, t)
+            for fuzzer in self.corpuses[proj]:
+                self.__download_one(proj, fuzzer)
 
 
 def __to_absolute_path(path: str) -> str:
     p = Path(path)
     if not p.exists():
         raise argparse.ArgumentTypeError('path {} does not exist'.format(p))
+    return str(p.resolve())
+
+def __to_absolute_path_create_if_not_existed(path: str) -> str:
+    p = Path(path)
+    if not p.exists():
+        os.mkdir(p)
     return str(p.resolve())
 
 
@@ -154,7 +162,7 @@ if __name__ == "__main__":
                         help="Download corpuses only when it's not in local, hash checks are skipped")
     parser.add_argument('-d', "--directory",
                         required=True,
-                        type=__to_absolute_path,
+                        type=__to_absolute_path_create_if_not_existed,
                         help="Directory where the corpuses are stored locally")
     parser.add_argument('-m', "--max-retries",
                         type=__to_uint,
