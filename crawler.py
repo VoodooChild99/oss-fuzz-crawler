@@ -1,5 +1,4 @@
 import os
-import hashlib
 import toml
 import argparse
 import requests
@@ -33,8 +32,8 @@ def log(msg):
     progress.console.log(msg)
 
 class Crawler:
-    def __init__(self, skip_check, dir, max_retries, corpuses) -> None:
-        self.skip_check = skip_check
+    def __init__(self, skip_existed, dir, max_retries, corpuses) -> None:
+        self.skip_existed = skip_existed
         self.dir = dir
         self.local_corpus_path_template = dir + '/{0}/{1}-corpus.zip'
         self.local_corpus_dir_template = dir + '/{0}'
@@ -43,26 +42,24 @@ class Crawler:
         with open(corpuses, 'r') as f:
             self.corpuses = toml.load(f)
         
-    def __get_corpus(self, url):
+    def __get_corpus(self, url, filepath):
         retry_num = -1
         with progress:
-            task_id = progress.add_task(
-                "download", filename=self.cur_target, start=True)
             while True:
                 try:
                     corpus = self.session.get(url, stream=True)
-                    progress.update(task_id, total=int(
-                        corpus.headers['content-length']))
-                    all_data = b""
-                    # progress.start_task(task_id)
-                    for data in corpus.iter_content(chunk_size=32768):
-                        all_data += data
-                        progress.update(task_id, advance=len(data))
-                    progress.remove_task(task_id)
                     if corpus.status_code != 200:
-                        log("[x] Failed to download corpus {}: {}".format(self.cur_target, all_data))
+                        log("[x] Failed to download corpus {}: {}".format(self.cur_target, corpus.content))
                         return None
-                    return all_data
+                    task_id = progress.add_task("download", filename=self.cur_target, start=True)
+                    progress.update(task_id, total=int(corpus.headers['content-length']))
+                    with open(filepath, 'wb') as f:
+                        for data in corpus.iter_content(chunk_size=1024):
+                            f.write(data)
+                            progress.update(task_id, advance=len(data))
+                    progress.remove_task(task_id)
+                    log("[o] Downloaded corpus {}".format(self.cur_target))
+                    return
                 except KeyboardInterrupt as KI:
                     raise KeyboardInterrupt(KI)
                 except Exception as err:
@@ -79,38 +76,14 @@ class Crawler:
             self.local_corpus_path_template.format(proj, self.cur_target))
         url = URL_TEMPLATE.format(proj, self.cur_target)
 
-        if not self.skip_check:
-            # check hash
-            corpus = self.__get_corpus(url)
-            if corpus is None:
-                return
-            new_hash = hashlib.sha256(corpus).hexdigest()
-            if local_corpus.exists():
-                with open(local_corpus, 'rb') as f:
-                    old_hash = hashlib.sha256(f.read()).hexdigest()
-                if new_hash == old_hash:
-                    log("[*] Skipping corpus {}: already exist".format(self.cur_target))
-                    return
-                else:
-                    with open(local_corpus, 'wb') as f:
-                        f.write(corpus)
-                        log("[o] Updated corpus {}".format(self.cur_target))
-            else:
-                with open(local_corpus, 'wb') as f:
-                    f.write(corpus)
-                    log("[o] Downloaded corpus {}".format(self.cur_target))
-        else:
-            # do not check, ignore if existed
-            if local_corpus.exists():
+        if local_corpus.exists():
+            if self.skip_existed:
                 log("[*] Skipping corpus {}: already exist".format(self.cur_target))
                 return
             else:
-                corpus = self.__get_corpus(url)
-                if corpus is None:
-                    return
-                with open(local_corpus, 'wb') as f:
-                    f.write(corpus)
-                    log("[o] Downloaded corpus {}".format(self.cur_target))
+                self.__get_corpus(url, local_corpus)
+        else:
+            self.__get_corpus(url, local_corpus)
 
     def run(self):
         for proj in self.corpuses:
@@ -147,7 +120,7 @@ def __to_uint(num: str) -> int:
 
 
 def main(args):
-    c = Crawler(args.skip_check, args.directory, args.max_retries, args.corpuses)
+    c = Crawler(args.skip_existed, args.directory, args.max_retries, args.corpuses)
     try:
         c.run()
     except KeyboardInterrupt:
@@ -157,9 +130,9 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="OSS-Fuzz Public Corpora Crawler")
-    parser.add_argument('-s', "--skip-check",
+    parser.add_argument('-s', "--skip-existed",
                         action="store_true",
-                        help="Download corpuses only when it's not in local, hash checks are skipped")
+                        help="Download corpuses only when it's not in local")
     parser.add_argument('-d', "--directory",
                         required=True,
                         type=__to_absolute_path_create_if_not_existed,
