@@ -31,7 +31,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -s, --skip-check      Download corpuses only when it's not in local, hash checks are skipped
+  -s, --skip-existed    Download corpuses only when it's not in local
   -d DIRECTORY, --directory DIRECTORY
                         Directory where the corpuses are stored locally
   -m MAX_RETRIES, --max-retries MAX_RETRIES
